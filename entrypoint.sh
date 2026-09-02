@@ -75,6 +75,10 @@ mkdir -p /home/node/.npm
 chown 1000:1000 /home/node/.npm
 
 # Install whatsapp plugin
-su -m -s /bin/sh node -c 'export HOME=/home/node; cd /app && node openclaw.mjs plugins install @openclaw/whatsapp 2>&1' && echo "[entrypoint] whatsapp plugin installed" || echo "[entrypoint] whatsapp install failed (see above)"
+# --force: overwrite any stale/older plugin left on the volume after a core upgrade
+# --accept-capabilities: grant the plugin's capability consent so the gateway won't refuse to start
+# TMPDIR/XDG_CACHE_HOME=/tmp: the volume is mounted over /home/node, whose root the node user
+#   cannot create new dirs in; point SQLite/cache temp at writable /tmp instead
+su -m -s /bin/sh node -c 'export HOME=/home/node; export TMPDIR=/tmp; export XDG_CACHE_HOME=/tmp; cd /app && node openclaw.mjs plugins install @openclaw/whatsapp --force --accept-capabilities 2>&1' && echo "[entrypoint] whatsapp plugin installed" || echo "[entrypoint] whatsapp install failed (see above)"
 
-exec su -m -s /bin/sh node -c 'export HOME=/home/node; cd /app && exec node openclaw.mjs gateway --allow-unconfigured'
+exec su -m -s /bin/sh node -c 'export HOME=/home/node; export TMPDIR=/tmp; export XDG_CACHE_HOME=/tmp; cd /app && exec node openclaw.mjs gateway --allow-unconfigured'
