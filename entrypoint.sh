@@ -61,6 +61,19 @@ SOULEOF
 chown -R node:node /home/node/.openclaw/workspace
 echo "[entrypoint] created SOUL.md in workspace"
 
+# Install Monday report scripts into workspace (deterministic report logic).
+# monday_report.sh does the dynamic fetch; monday_format.mjs computes + builds the full
+# report; the cron prompt only runs the script and relays its output verbatim.
+# Copied fresh from the image on every boot so the repo is the source of truth.
+if [ -f /opt/monday_report.sh ] && [ -f /opt/monday_format.mjs ]; then
+  cp /opt/monday_report.sh /home/node/.openclaw/workspace/monday_report.sh
+  cp /opt/monday_format.mjs /home/node/.openclaw/workspace/monday_format.mjs
+  chmod 755 /home/node/.openclaw/workspace/monday_report.sh
+  chmod 644 /home/node/.openclaw/workspace/monday_format.mjs
+  chown node:node /home/node/.openclaw/workspace/monday_report.sh /home/node/.openclaw/workspace/monday_format.mjs
+  echo "[entrypoint] installed monday report scripts into workspace"
+fi
+
 # Write Monday API key to workspace
 if [ -n "$MONDAY_API_KEY" ]; then
   echo "$MONDAY_API_KEY" > /home/node/.openclaw/workspace/.monday_key
