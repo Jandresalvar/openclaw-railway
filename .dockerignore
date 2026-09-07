@@ -1,3 +1,5 @@
 *
 !Dockerfile
 !entrypoint.sh
+!monday_report.sh
+!monday_format.mjs
