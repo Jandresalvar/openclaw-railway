@@ -17,6 +17,17 @@ if [ -n "$OPENCLAW_BOOTSTRAP_CONFIG_B64" ]; then
   echo "[entrypoint] bootstrapped openclaw.json from env var"
 fi
 
+# Ensure gateway.trustedProxies is set. OpenClaw 8.x refuses all external HTTP
+# (proxy_attribution_required) unless it can attribute the client IP behind a proxy.
+# On Railway the edge proxy reaches the container over the private ULA network
+# (fd12::/… inside fc00::/7 = "uniqueLocal"). Trust only internal ranges (never public).
+# Injected here (not in the env-var blob) so it stays out of the config secret and is
+# version-controlled. Idempotent; safe if the config already has it.
+if [ -f /home/node/.openclaw/openclaw.json ]; then
+  node -e 'const fs=require("fs");const p="/home/node/.openclaw/openclaw.json";try{const c=JSON.parse(fs.readFileSync(p,"utf8"));c.gateway=c.gateway||{};c.gateway.trustedProxies=["loopback","uniqueLocal","privateNetwork"];fs.writeFileSync(p,JSON.stringify(c,null,2));console.log("[entrypoint] set gateway.trustedProxies");}catch(e){console.log("[entrypoint] trustedProxies inject skipped:",e.message);}'
+  chown node:node /home/node/.openclaw/openclaw.json
+fi
+
 # Bootstrap cron jobs from env var
 if [ -n "$OPENCLAW_BOOTSTRAP_CRON_B64" ]; then
   echo "$OPENCLAW_BOOTSTRAP_CRON_B64" | base64 -d > /home/node/.openclaw/cron/jobs.json
