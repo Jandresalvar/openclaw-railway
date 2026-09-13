@@ -19,12 +19,14 @@ fi
 
 # Ensure gateway.trustedProxies is set. OpenClaw 8.x refuses all external HTTP
 # (proxy_attribution_required) unless it can attribute the client IP behind a proxy.
-# On Railway the edge proxy reaches the container over the private ULA network
-# (fd12::/… inside fc00::/7 = "uniqueLocal"). Trust only internal ranges (never public).
+# Railway's edge proxy reaches the container from the CGNAT range 100.64.0.0/10
+# (confirmed via gateway log: "unattributable proxy-shaped traffic from 100.64.0.3").
+# Trust that range + loopback + ULA (IPv6 internal); never public IPs. Use explicit
+# CIDRs (the config parser expects CIDRs, not named tokens).
 # Injected here (not in the env-var blob) so it stays out of the config secret and is
 # version-controlled. Idempotent; safe if the config already has it.
 if [ -f /home/node/.openclaw/openclaw.json ]; then
-  node -e 'const fs=require("fs");const p="/home/node/.openclaw/openclaw.json";try{const c=JSON.parse(fs.readFileSync(p,"utf8"));c.gateway=c.gateway||{};c.gateway.trustedProxies=["loopback","uniqueLocal","privateNetwork"];fs.writeFileSync(p,JSON.stringify(c,null,2));console.log("[entrypoint] set gateway.trustedProxies");}catch(e){console.log("[entrypoint] trustedProxies inject skipped:",e.message);}'
+  node -e 'const fs=require("fs");const p="/home/node/.openclaw/openclaw.json";try{const c=JSON.parse(fs.readFileSync(p,"utf8"));c.gateway=c.gateway||{};c.gateway.trustedProxies=["100.64.0.0/10","127.0.0.0/8","::1/128","fc00::/7"];fs.writeFileSync(p,JSON.stringify(c,null,2));console.log("[entrypoint] set gateway.trustedProxies");}catch(e){console.log("[entrypoint] trustedProxies inject skipped:",e.message);}'
   chown node:node /home/node/.openclaw/openclaw.json
 fi
 
