@@ -3,8 +3,8 @@
 # Fetch dinamico de todos los grupos "/ Mes Actual", calcula y arma el reporte COMPLETO.
 # Imprime "HTTP_CODE=<code>" y, si 200, el mensaje final listo (Haiku solo lo relaya).
 NAME="${1:-Andrés}"
-BOARD=9726722624
-COLS='[\"date_mkzd7g01\", \"text_mkzdyt0s\", \"text_mktdwrqa\", \"text_mktd5pkn\"]'
+BOARD=18431657320
+COLS='[\"fecha\", \"generados\", \"pre_aprobados\", \"pre_rechazados\"]'
 DIR=$(dirname "$0")
 
 # 1) Listar todos los grupos (respuesta minuscula: solo id+title)

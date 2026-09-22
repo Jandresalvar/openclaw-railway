@@ -26,10 +26,10 @@ const spa = new Intl.DateTimeFormat('es-ES', {
 }).format(yDate).replace(',', '');
 
 const COL = {
-  gen: 'Leads Link Verificacion',
-  apr: 'Leads Pre-aprobados',
-  den: 'Leads Pre-denegados',
-  date: 'Date',
+  gen: 'Generados',
+  apr: 'Pre-aprobados',
+  den: 'Pre-rechazados',
+  date: 'Fecha',
 };
 const num = (t) => { const n = parseFloat(String(t ?? '').replace(',', '.')); return Number.isFinite(n) ? n : 0; };
 const pct = (a, b) => (b > 0 ? (a / b * 100) : 0).toFixed(1);
